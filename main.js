@@ -1,27 +1,23 @@
-// main.js
-// Додає функціонал для вибору бренду та динамічних розділів
-
+// js/main.js
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Вибір бренду
+  // 1. Выбор бренда на главной
   const brandSelect = document.querySelector('#brand-select select');
   if (brandSelect) {
     brandSelect.addEventListener('change', function() {
       if (this.value) window.location.href = this.value;
     });
-    // Попередній вибір (якщо є ?brand=...)
-    const params = new URLSearchParams(location.search);
-    if (params.get('brand')) {
-      brandSelect.value = `catalog.html?brand=${params.get('brand')}`;
-    }
+    // Предварительный выбор, если есть ?brand=...
+    const bp = new URLSearchParams(location.search).get('brand');
+    if (bp) brandSelect.value = `catalog.html?brand=${bp}`;
   }
 
-  // 2. Рекомендовані товари на головній
+  // 2. Рекомендованные товары на главной
   const recContainer = document.getElementById('recommended-products');
   if (recContainer) {
     const recProducts = [
-      { name: 'SHARK Skidplate', priceEx: '10 570,25', priceIn: '12 790', img: 'img/skidplate.jpg', inStock: true, badge: 'Новинка' },
-      { name: 'ATV Cover', priceEx: '2 500,00', priceIn: '3 000', img: 'img/cover.jpg', inStock: false },
-      // Додай ще товари за необхідності
+      { name: 'SHARK Skidplate', priceEx: '10 570,25', priceIn: '12 790', img: 'img/skidplate.jpg', inStock: true, badge: 'Новинка' },
+      { name: 'ATV Cover',     priceEx: '2 500,00',  priceIn: '3 000',  img: 'img/cover.jpg',     inStock: false },
+      // …добавьте свои товары
     ];
     recProducts.forEach(p => {
       const col = document.createElement('div');
@@ -32,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <img src="${p.img}" class="card-img-top" alt="${p.name}">
           <div class="card-body d-flex flex-column">
             <h5 class="card-title">${p.name}</h5>
-            <p class="mb-1"><small>Ціна без ПДВ ${p.priceEx} ₴</small></p>
+            <p class="mb-1"><small>Цена без НДС ${p.priceEx} ₴</small></p>
             <p class="fw-bold mb-2">${p.priceIn} ₴</p>
             <span class="badge ${p.inStock ? 'bg-success' : 'bg-secondary'} mb-2">
               ${p.inStock ? 'У наявності' : 'Немає в наявності'}
@@ -42,5 +38,25 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>`;
       recContainer.appendChild(col);
     });
+  }
+
+  // 3. Фильтрация карточек на странице каталог.html
+  const grid = document.getElementById('product-grid');
+  if (grid) {
+    const cards  = grid.querySelectorAll('[data-category]');
+    const params = new URLSearchParams(location.search);
+    const cat    = params.get('category');
+    const sub    = params.get('sub');
+    const brand  = params.get('brand');
+
+    cards.forEach(card => {
+      let show = true;
+      if (cat   && card.dataset.category !== cat) show = false;
+      if (sub   && card.dataset.sub      !== sub) show = false;
+      if (brand && card.dataset.brand    !== brand) show = false;
+      card.style.display = show ? '' : 'none';
+    });
+
+    if (cat || brand) grid.scrollIntoView({ behavior: 'smooth' });
   }
 });
